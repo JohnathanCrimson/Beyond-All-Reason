@@ -1221,7 +1221,9 @@ function UnitDef_Post(name, uDef)
 
 	-- Naval Balance Adjustments, if anything breaks here blame ZephyrSkies
 	if modOptions.naval_balance_tweaks == true then
-		local buildOptionReplacements = {
+		local buildOptionReplacements = 
+		{
+			corsy = { ["corpship] = "cornavyfrigate" },
 			armcs = { ["armfhlt"] = "armnavaldefturret" },
 			armch = { ["armfhlt"] = "armnavaldefturret" },
 			armbeaver = { ["armfhlt"] = "armnavaldefturret" },
