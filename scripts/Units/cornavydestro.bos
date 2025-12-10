@@ -1,0 +1,273 @@
+
+#include "../recoil_common_includes.h"
+
+piece  base, smoke1, smoke2, smoke3, wake1, wake2, barbette1, barbette2, AAbase, turret1, turret2, radar, cannon1, cannon2, AA, flare1, flare2, flare3, flare4, flare5, rangfind1, rangfind2;
+		
+static-var  gun_1, gun_2, gun_3, restore_delay, aimDir1, aimDir2, aimDir3, oldHead, isMoving, newHeadMain;
+
+// Signal definitions
+#define SIGNAL_AIM1 256
+#define SIGNAL_AIM2 512
+
+#define RB_MASS 23
+#define RB_LENGTH 6
+#define RB_WIDTH 3
+#define RB_PITCH_SPEED 100
+#define RB_PITCH_ACCELERATION 20
+#define RB_ROLL_ACCELERATION 8
+#define RB_RECOIL_ENERGY_1 700
+#define RB_RECOIL_ENERGY_2 250
+#define RB_WAKE_PIECE wake1
+#define RB_WAKE_CEG 1024 + 1
+#define RB_IDLE_KICK 10000
+
+#define RB_BOWSPLASH_PIECE wake2
+#define RB_BOWSPLASH_CEG 1024 + 2
+
+#define RB_ROCKUNIT 60
+
+#include "../bar_ships_common.h"
+
+
+
+Create()
+{
+	hide wake2;
+	hide flare1;
+	hide flare2;
+	hide flare3;
+	hide flare4;
+	hide flare5;
+	hide wake1;
+	hide smoke1;
+	hide smoke2;
+	hide smoke3;
+	hide rangfind1;
+	hide rangfind2;
+	gun_1 = 1;
+	gun_2 = 1;
+	gun_3 = 1;
+	restore_delay = 3000;
+	
+	start-script InitRockBoat();
+	SLEEP_UNTIL_UNITFINISHED;
+	start-script BoatPhysics();
+	
+	spin radar around y-axis speed <60.0> accelerate <2>;
+	turn AAbase to y-axis <-180> now;
+}
+
+
+SetMaxReloadTime(reloadMS)
+{
+	restore_delay = reloadMS * 2;
+}
+
+static-var  Stunned;
+
+ExecuteRestoreAfterDelay1()
+{
+    if (Stunned) {
+        return (1);
+    }
+	turn turret1 to y-axis <0.0> speed <135.0>;
+	turn cannon1 to x-axis <0.0> speed <67.500000>;
+}
+ExecuteRestoreAfterDelay2()
+{
+    if (Stunned) {
+        return (1);
+    }
+	turn turret2 to y-axis <0.0> speed <135.0>;
+	turn cannon2 to x-axis <0.0> speed <67.500000>;
+}
+ExecuteRestoreAfterDelay3()
+{
+    if (Stunned) {
+        return (1);
+    }
+	turn AAbase to y-axis <180.0> speed <135.0>;
+	turn AA to x-axis <0.0> speed <67.500000>;
+}
+
+SetStunned(State)
+{
+    Stunned = State;
+	if (!Stunned) {
+	    start-script ExecuteRestoreAfterDelay1();
+		start-script ExecuteRestoreAfterDelay2();
+		start-script ExecuteRestoreAfterDelay3();
+	}
+}
+RestoreAfterDelay()
+{
+	sleep restore_delay;
+	set-signal-mask 0;
+	start-script ExecuteRestoreAfterDelay1();
+	start-script ExecuteRestoreAfterDelay2();
+	start-script ExecuteRestoreAfterDelay3();
+}
+
+
+StartMoving()
+{
+	isMoving = 1;
+	
+}
+
+StopMoving()
+{
+	isMoving = 0;
+}
+
+moveSmoke()
+{
+	while (isMoving == 1){
+	emit-sfx 256 + 1 from smoke1;
+	emit-sfx 256 + 1 from smoke2;
+	emit-sfx 256 + 1 from smoke3;
+	sleep 1;
+	}
+}
+
+AimFromWeapon1(piecenum)
+{
+	piecenum = rangfind1;
+}
+QueryWeapon1(pieceIndex)
+{
+	pieceIndex = flare1;
+}
+
+AimWeapon1(heading, pitch)
+{
+	signal SIGNAL_AIM1;
+	set-signal-mask SIGNAL_AIM1;
+	turn turret1 to y-axis heading speed <60.0>;
+	turn cannon1 to x-axis RB_AIMPITCHCORRECTION(heading) - pitch speed <40>;
+	wait-for-turn turret1 around y-axis;
+	//wait-for-turn cannon1 around x-axis;
+	aimDir1 = heading;
+	start-script RestoreAfterDelay();
+	return (1);
+	
+}
+
+FireWeapon1()
+{
+	RB_RECOILBOAT(aimDir1, RB_RECOIL_ENERGY_1);RB_RECOILBOAT(aimDir1, RB_RECOIL_ENERGY_1);
+	move cannon1 to z-axis [-7.500000] speed [100.0];
+	emit-sfx 1024 + 0 from flare1;
+	wait-for-move cannon1 along z-axis;
+	move cannon1 to z-axis [0.0] speed [7.0];
+	
+}
+
+AimFromWeapon2(piecenum)
+{
+	piecenum = rangfind2;
+}
+QueryWeapon2(pieceIndex)
+{
+	pieceIndex = flare2;
+}
+
+AimWeapon2(heading, pitch)
+{
+	signal SIGNAL_AIM2;
+	set-signal-mask SIGNAL_AIM2;
+	turn turret2 to y-axis heading speed <60.0>;
+	turn cannon2 to x-axis RB_AIMPITCHCORRECTION(heading) - pitch speed <40>;
+	wait-for-turn turret2 around y-axis;
+	//wait-for-turn cannon2 around x-axis;
+	aimDir2 = heading;
+	start-script RestoreAfterDelay();
+	return (1);
+	
+}
+
+FireWeapon2()
+{
+	RB_RECOILBOAT(aimDir2, RB_RECOIL_ENERGY_1);RB_RECOILBOAT(aimDir2, RB_RECOIL_ENERGY_1);
+	move cannon2 to z-axis [-7.500000] speed [100.0];
+	emit-sfx 1024 + 0 from flare1;
+	wait-for-move cannon2 along z-axis;
+	move cannon2 to z-axis [0.0] speed [7.0];
+	
+}
+
+AimWeapon3(heading, pitch)
+{
+	signal SIGNAL_AIM3;
+	set-signal-mask SIGNAL_AIM3;
+	turn AAbase to y-axis heading speed <450.0>;
+	turn AA to x-axis <0.0> - pitch speed <450.0>;
+	wait-for-turn AAbase around y-axis;
+	wait-for-turn AA around x-axis;
+	start-script RestoreAfterDelay();
+	return (1);
+}
+
+FireWeapon3()
+{
+	++gun_1;
+	if( gun_1 == 4 )
+	{
+		gun_1 = flare3;
+	}
+	return (0);
+}
+
+AimFromWeapon3(pieceIndex)
+{
+	pieceIndex = AA;
+	return (0);
+}
+
+QueryWeapon3(pieceIndex)
+{
+	if( gun_1 == 1 )
+	{
+		pieceIndex = flare3;
+	}
+	if( gun_1 == 2 )
+	{
+		pieceIndex = flare4;
+	}
+	if( gun_1 == 3 )
+	{
+		pieceIndex = flare5;
+	}
+	return (0);
+}
+
+Killed(severity, corpsetype)
+{
+	if( severity <= 25 )
+	{
+		corpsetype = 1;
+			explode cannon1 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+			explode cannon2 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+		// explode base1 type BITMAPONLY | BITMAP3 | NOHEATCLOUD;
+			explode turret1 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+			explode turret2 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+		return (corpsetype);
+	}
+	if( severity <= 50 )
+	{
+		corpsetype = 2;
+			explode cannon1 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+			explode cannon2 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+		// explode base1 type BITMAPONLY | BITMAP3 | NOHEATCLOUD;
+			explode turret1 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+			explode turret2 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+		return (corpsetype);
+	}
+	corpsetype = 3;
+			explode cannon1 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+			explode cannon2 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+		// explode base1 type BITMAPONLY | BITMAP3 | NOHEATCLOUD;
+			explode turret1 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+			explode turret2 type BITMAPONLY | BITMAP1 | NOHEATCLOUD;
+	return corpsetype;
+}

@@ -35,7 +35,7 @@ return {
 		upright = true,
 		waterline = 45,
 		customparams = {
-			model_author = "Mr Bob",
+			model_author = "Johnathan Crimson",
 			normaltex = "unittextures/cor_normal.dds",
 			subfolder = "CorShips",
 			unitgroup = "sub",
