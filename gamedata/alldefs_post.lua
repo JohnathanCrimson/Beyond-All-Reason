@@ -1235,11 +1235,12 @@ function UnitDef_Post(name, uDef)
 		uDef = proposed_unit_reworks.proposed_unit_reworksTweaks(name, uDef)
 	end
 
-	-- Naval Balance Adjustments, if anything breaks here blame ZephyrSkies
+	-- Naval Balance Adjustments, if anything breaks here blame ZephyrSkies and JC
 	if modOptions.naval_balance_tweaks == true then
 		local buildOptionReplacements = 
 		{
 			corsy = { ["corpship] = "cornavyfrigate" },
+			corsy = { ["corroy] = "cornavydestro" },
 			armcs = { ["armfhlt"] = "armnavaldefturret" },
 			armch = { ["armfhlt"] = "armnavaldefturret" },
 			armbeaver = { ["armfhlt"] = "armnavaldefturret" },
